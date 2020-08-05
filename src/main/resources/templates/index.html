@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+          integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+
+    <title>Admin panel</title>
+</head>
+<body>
+<!--    Header-->
+<nav class="navbar navbar-dark bg-dark">
+    <a class="navbar-brand font-weight-bold" sec:authentication="name"/>
+    <a class="navbar-brand">with roles:</a>
+    <a class="navbar-brand" th:each="role: ${#authentication.authorities}" th:text="${role.authority}"/>
+    <a th:href="@{/logout}" class="navbar-text ml-auto">Logout</a>
+</nav>
+<!---->
+<div class="row container-fluid" id="row-container-fluid">
+<!--    Left side-->
+    <div class="col-2" id="navPanel">
+        <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+            <a th:if="${#authorization.expression('hasAuthority(''ROLE_ADMIN'')')}" class="nav-link active"
+               id="v-pills-admin-tab" data-toggle="pill" href="#v-pills-admin"
+               role="tab" aria-controls="v-pills-admin" aria-selected="true">Admin</a>
+            <a th:if="${#authorization.expression('hasAuthority(''ROLE_USER'')')}"
+               th:class="${#authorization.expression('hasAuthority(''ROLE_ADMIN'')') ? 'nav-link' : 'nav-link active'}"
+               id="v-pills-user-tab" data-toggle="pill" href="#v-pills-user"
+               role="tab" aria-controls="v-pills-user" aria-selected="false">User</a>
+        </div>
+    </div>
+<!--    Right side-->
+    <div class="col-10" id="adminPanel" data-spy="scroll" data-target="#v-pills-tabContent">
+        <div class="tab-content" id="v-pills-tabContent">
+<!--            Admin panel-->
+            <div th:if="${#authorization.expression('hasAuthority(''ROLE_ADMIN'')')}" class="tab-pane fade show active"
+                 id="v-pills-admin" role="tabpanel" aria-labelledby="v-pills-admin-tab">
+                <h1>Admin Panel</h1>
+                <ul class="nav nav-tabs" id="AdminTabs" role="tablist">
+                    <li class="nav-item" role="presentation" id="UsersTableNavTabs">
+                        <a class="nav-link active" id="usersTable-tab" data-toggle="tab" role="tab"
+                           aria-controls="usersTable" aria-selected="true" href="#usersTable">Users table</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="newUser-tab" data-toggle="tab" role="tab"
+                           aria-controls="newUser" aria-selected="false" href="#newUser">New User</a>
+                    </li>
+                </ul>
+<!--                Table all users-->
+                <div class="tab-content" id="AdminTabsContent">
+                    <div class="tab-pane fade show active" id="usersTable" role="tabpanel" aria-labelledby="usersTable-tab">
+                        <div class="card">
+                            <div class="card-header font-weight-bold">All users</div>
+                            <div id="all-users-table">
+                                <table class="table table-striped">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">ID</th>
+                                        <th scope="col">Name</th>
+                                        <th scope="col">Last Name</th>
+                                        <th scope="col">Email</th>
+                                        <th scope="col">Roles</th>
+                                        <th scope="col">Edit</th>
+                                        <th scope="col">Delete</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+<!--                                    JS table-->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+<!--                    New user-->
+                    <div class="tab-pane fade" id="newUser" role="tabpanel" aria-labelledby="newUser-tab">
+                        <div class="card">
+                            <div class="card-header font-weight-bold" style="font-size: 20px">Add new user</div>
+                            <form class="form-horizontal text-center mx-auto font-weight-bold" id="new-form">
+                                <div class="form-group">
+                                    <label for="firstNameInputNew">Name</label>
+                                    <input type="text" class="form-control" id="firstNameInputNew">
+                                </div>
+                                <div class="form-group">
+                                    <label for="lastNameInputNew">Last name</label>
+                                    <input type="text" class="form-control" id="lastNameInputNew"/>
+                                </div>
+                                <div class="form-group">
+                                    <label for="emailInputNew">Email</label>
+                                    <input type="email" class="form-control" id="emailInputNew"/>
+                                </div>
+                                <div class="form-group">
+                                    <label for="passwordInputNew">Password</label>
+                                    <input type="password" class="form-control" id="passwordInputNew">
+                                </div>
+                                <div class="form-group">
+                                    <label for="rolesInputNew">Role</label>
+                                    <select class="form-control" id="rolesInputNew" multiple="multiple"></select>
+                                </div>
+                                <button class="btn btn-success" type="button" id="buttonInputNewSubmit">Add new user</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+<!--                Edit user modal form-->
+                <div class="modal fade" id="editUserModal" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title font-weight-bold" id="editUserModalLabel">Edit user</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div th:fragment="edit-form-fragment" class="form-horizontal text-center mx-auto font-weight-bold" role="form" id="edit-form">
+                                    <div class="form-group">
+                                        <label class="control-label" for="idInputEdit">ID</label>
+                                        <input type="text" class="form-control" id="idInputEdit" readonly/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" for="firstNameInputEdit">Name</label>
+                                        <input type="text" class="form-control" id="firstNameInputEdit"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" for="lastNameInputEdit">Last name</label>
+                                        <input type="text" class="form-control" id="lastNameInputEdit"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" for="emailInputEdit">Email</label>
+                                        <input type="email" class="form-control" id="emailInputEdit"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" for="passwordInputEdit">Password</label>
+                                        <input type="password" class="form-control" id="passwordInputEdit"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" for="rolesInputEdit">Role</label>
+                                        <select class="form-control" id="rolesInputEdit" multiple="multiple"></select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                <button type="button" id="buttonEditSubmit" class="btn btn-primary">Edit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+<!--                Delete user modal form-->
+                <div class="modal fade" id="deleteUserModal" tabindex="-1" role="dialog" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title font-weight-bold" id="deleteUserModalLabel">Edit user</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-horizontal text-center mx-auto font-weight-bold" role="form" id="delete-form">
+                                    <div class="form-group">
+                                        <label class="control-label" for="idInputDelete">ID</label>
+                                        <input type="text" class="form-control" id="idInputDelete" disabled='disabled'/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" for="firstNameInputDelete">Name</label>
+                                        <input type="text" class="form-control" id="firstNameInputDelete" disabled='disabled'/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" for="lastNameInputDelete">Last name</label>
+                                        <input type="text" class="form-control" id="lastNameInputDelete" disabled='disabled'/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" for="emailInputDelete">Email</label>
+                                        <input type="email" class="form-control" id="emailInputDelete" disabled='disabled'/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" for="rolesInputDelete">Role</label>
+                                        <select class="form-control" id="rolesInputDelete" multiple="multiple" disabled='disabled'></select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                <button type="submit" id="buttonDeleteSubmit" class="btn btn-danger">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+<!--            User panel-->
+            <div th:if="${#authorization.expression('hasAuthority(''ROLE_USER'')')}"
+                 th:class="${#authorization.expression('hasAuthority(''ROLE_ADMIN'')') ?
+                  'tab-pane fade' : 'tab-pane fade show active'}" id="v-pills-user" role="tabpanel" aria-labelledby="v-pills-user-tab">
+                <h1>User information-page</h1>
+                <div class="card">
+                    <div class="card-header font-weight-bold">About user</div>
+                    <div id="current-user-table">
+                        <table class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Last Name</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Role</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+<!--                            JS table-->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Подключаем jQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<!-- Подключаем плагин Popper -->
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+
+<!-- Подключаем Bootstrap JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+        integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+        crossorigin="anonymous"></script>
+
+<script src="functions.js"></script>
+</body>
+</html>
