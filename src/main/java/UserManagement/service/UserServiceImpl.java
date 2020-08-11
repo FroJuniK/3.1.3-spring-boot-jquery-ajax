@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -64,12 +65,15 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     public void editUser(UserDto user) {
-        User userUpd = userRepository.findById(user.getId()).get();
-        userUpd.setPassword(passwordEncoder.encode(user.getPassword()));
-        userUpd.setRoles(getSetOfRoles(user.getRoles()));
-        userUpd.setName(user.getName());
-        userUpd.setLastName(user.getLastName());
-        userRepository.save(userUpd);
+        User editUsr = userRepository.findById(user.getId()).get();
+        if (!user.getPassword().isEmpty()) {
+            editUsr.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+        editUsr.setRoles(getSetOfRoles(user.getRoles()));
+        editUsr.setName(user.getName());
+        editUsr.setLastName(user.getLastName());
+        editUsr.setEmail(user.getEmail());
+        userRepository.save(editUsr);
     }
 
     public Set<String> getNameRoles() {

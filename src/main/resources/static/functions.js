@@ -91,33 +91,32 @@ $("#editUserModal").on('show.bs.modal', (e) => {
             )
         });
         $("#rolesInputEdit").val(user.roles);
-
-        $("#buttonEditSubmit").on('click', (e) => {
-            e.preventDefault();
-
-            let editUser = {
-                id: $("#idInputEdit").val(),
-                name: $("#firstNameInputEdit").val(),
-                lastName: $("#lastNameInputEdit").val(),
-                email: $("#emailInputEdit").val(),
-                password: $("#passwordInputEdit").val(),
-                roles: $("#rolesInputEdit").val()
-            }
-
-            $.ajax({
-                url: "/rest/admin/users",
-                type: "PUT",
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                data: JSON.stringify(editUser)
-            }).done((msgUpdate) => {
-                $("#editUserModal").modal('hide');
-                getAllUsers();
-            })
-        })
     });
-});
+})
 
+$("#buttonEditSubmit").on('click', (e) => {
+    e.preventDefault();
+
+    let editUser = {
+        id: $("#idInputEdit").val(),
+        name: $("#firstNameInputEdit").val(),
+        lastName: $("#lastNameInputEdit").val(),
+        email: $("#emailInputEdit").val(),
+        password: $("#passwordInputEdit").val(),
+        roles: $("#rolesInputEdit").val()
+    }
+
+    $.ajax({
+        url: "/rest/admin/users",
+        type: "PUT",
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        data: JSON.stringify(editUser)
+    }).done((msgUpdate) => {
+        $("#editUserModal").modal('hide');
+        getAllUsers();
+    })
+})
 
 $("#deleteUserModal").on('show.bs.modal', (e) => {
     let userId = $(e.relatedTarget).data("user-id");
